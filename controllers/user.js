@@ -1,36 +1,70 @@
 const { respose, request } = require('express')
+const bcryptjs = require('bcryptjs')
+
+const Usuario = require('../models/user')
 
 
-const userGet = (req = request, res = respose) => {
-    const { q, a } = req.query
+const userGet = async (req = request, res = respose) => {
+
+    const { limite = 5, desde = 0 } = req.query
+
+    const query = { estado: true }
+
+    const [total, usuarios] = await Promise.all([
+        Usuario.countDocuments(query),
+        Usuario.find(query)
+            .skip(Number(desde))
+            .limit(Number(limite))
+    ])
 
     res.json({
-        msg: 'get API - controller',
-        q,
-        a
+        total,
+        usuarios
     })
 }
-const userPost = (req, res = respose) => {
+const userPost = async (req, res = respose) => {
 
-    const body = req.body
+    const { nombre, correo, password, rol } = req.body
+    const usuario = new Usuario({ nombre, correo, password, rol })
+
+    //Encrypt pass
+    const salt = bcryptjs.genSaltSync()
+    usuario.password = bcryptjs.hashSync(password, salt)
+
+    await usuario.save()
 
     res.json({
-        msg: 'post API - controller',
-        body
+        usuario
     })
 }
-const userPut = (req, res = respose) => {
+const userPut = async (req, res = respose) => {
     const { id } = req.params
 
+    const { _id, password, gogle, correo, ...resto } = req.body
+
+    if (password) {
+        //Encrypt pass
+        const salt = bcryptjs.genSaltSync()
+        resto.password = bcryptjs.hashSync(password, salt)
+    }
+
+    const usuario = await Usuario.findByIdAndUpdate(id, resto)
+
     res.json({
-        msg: 'put API - controller',
-        id
+        usuario
     })
 }
-const userDelete = (req, res = respose) => {
-    res.json({
-        msg: 'delete API - controller'
-    })
+const userDelete = async (req, res = respose) => {
+
+    const { id } = req.params
+
+    // //Delete direct on BD
+    // const usuario = await Usuario.findByIdAndDelete(id)
+
+    //Partial delete
+    const usuario = await Usuario.findByIdAndUpdate(id, { estado: false })
+
+    res.json(usuario)
 }
 const userPatch = (req, res = respose) => {
     res.json({
