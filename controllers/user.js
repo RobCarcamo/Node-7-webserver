@@ -57,14 +57,17 @@ const userPut = async (req, res = respose) => {
 const userDelete = async (req, res = respose) => {
 
     const { id } = req.params
+    const uid = req.uid
 
     // //Delete direct on BD
     // const usuario = await Usuario.findByIdAndDelete(id)
 
     //Partial delete
     const usuario = await Usuario.findByIdAndUpdate(id, { estado: false })
+    const userLoged = req.user
 
-    res.json(usuario)
+
+    res.json({usuario, userLoged})
 }
 const userPatch = (req, res = respose) => {
     res.json({
