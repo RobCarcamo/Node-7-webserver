@@ -7,8 +7,11 @@ class Server {
         this.app = express()
         this.port = process.env.PORT
         
-        this.userPath = '/api/user'
-        this.authPath = '/api/auth'
+        this.paths = {
+            auth:'/api/auth',
+            user:'/api/user',
+            upload:'/api/upload'
+        }
 
         //Conect to DB
         this.connectDB()
@@ -36,9 +39,9 @@ class Server {
 
     routes() {
 
-        this.app.use(this.authPath, require('../routes/auth'))
-        this.app.use(this.userPath, require('../routes/user'))
-
+        this.app.use(this.paths.auth, require('../routes/auth'))
+        this.app.use(this.paths.user, require('../routes/user'))
+        this.app.use(this.paths.upload, require('../routes/upload'))
 
     }
 
